@@ -7,14 +7,20 @@ class localuser::params {
 
     case $::osfamily {
         'RedHat': {
-            $admingroup = 'wheel'
-         }
+            $sudogroup = 'wheel'
+            $defaultshell = '/bin/bash'
+        }
         'Debian': {
-            $admingroup = 'sudo'
-
+            $sudogroup = 'sudo'
+            $defaultshell = '/bin/bash'
+        }
+        'FreeBSD': {
+            $sudogroup = 'wheel'
+            $defaultshell = '/bin/csh'
         }
         default: {
-            $admingroup = 'sudo'
+            $sudogroup = 'sudo'
+            $defaultshell = '/bin/bash'
         }
     }
 }

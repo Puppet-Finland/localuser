@@ -24,7 +24,8 @@
 #   defaults to 'no'. In practice, adds the user to the OS-specific admin group 
 #   defined in localuser::params.
 # [*shell*]
-#   The default shell for the user. Defaults to '/bin/bash'.
+#   The default shell for the user. Defaults to 
+#   ${::localuser::params::defaultshell}.
 # [*ssh_key*]
 #   User's public SSH key for $HOME/.ssh/authorized_keys. If left undefined, no 
 #   SSH key will be installed.
@@ -67,7 +68,7 @@ define localuser::user
     $comment="$username",
     $groups=[],
     $admin='no',
-    $shell='/bin/bash',
+    $shell='',
     $ssh_key='',
     $key_type='ssh-dss',
 )
@@ -75,9 +76,16 @@ define localuser::user
 
     include localuser::params
 
+    # If $shell is not defined, use the OS default
+    if $shell == '' {
+        $myshell = "${::localuser::params::defaultshell}"
+    } else {
+        $myshell = $shell
+    }
+
     # Add the user to the admin group, if requested
     if $admin == 'yes' {
-        $all_groups = concat($groups,["$::localuser::params::admingroup"])
+        $all_groups = concat($groups,["$::localuser::params::sudogroup"])
     } else {
         $all_groups = $groups
     }
@@ -85,7 +93,7 @@ define localuser::user
     # Create the local user
     user { "$username":
         password => "$password_hash",
-        shell => $shell,
+        shell => $myshell,
         comment => "$username",
         home => "/home/$username",
         managehome => true,

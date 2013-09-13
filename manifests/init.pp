@@ -6,7 +6,7 @@
 class localuser {
 
 # Rationale for this is explained in init.pp of the sshd module
-if hiera('manage_localuser') != 'false' {
+if hiera('manage_localuser', 'true') != 'false' {
     # This is just a placeholder
 }
 }

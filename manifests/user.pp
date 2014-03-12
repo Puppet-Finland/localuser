@@ -64,7 +64,7 @@ define localuser::user
 (
     $username,
     $status='present',
-    $password_hash,
+    $password_hash = '',
     $comment="$username",
     $groups=[],
     $admin='no',
@@ -92,7 +92,10 @@ define localuser::user
 
     # Create the local user
     user { "$username":
-        password => "$password_hash",
+        password => $password_hash ? {
+            ''      => undef,
+            default => "${password_hash}",
+        },
         shell => $myshell,
         comment => "$username",
         home => "/home/$username",

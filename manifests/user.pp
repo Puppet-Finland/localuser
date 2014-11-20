@@ -34,31 +34,31 @@
 #
 # == Examples
 #
-# localuser::user { 'john':
-#   username => 'john',
-#   comment => 'admin user with a SSH key',
-#   password_hash => 'users_password_hash',
-#   admin => 'yes',
-#   key_type => 'ssh-dss',
-#   ssh_key => 'users_public_ssh_key'
-# }
-#
-# localuser::user { 'jane':
-#   username => 'jane',
-#   comment => 'normal user without a SSH key',
-#   password_hash => 'users_password_hash',
-#   admin => 'no',
-# }
+#   localuser::user { 'john':
+#       username => 'john',
+#       comment => 'admin user with a SSH key',
+#       password_hash => 'users_password_hash',
+#       admin => 'yes',
+#       key_type => 'ssh-dss',
+#       ssh_key => 'users_public_ssh_key'
+#   }
+#   
+#   localuser::user { 'jane':
+#       username => 'jane',
+#       comment => 'normal user without a SSH key',
+#       password_hash => 'users_password_hash',
+#       admin => 'no',
+#   }
 #
 # == Authors
 #
 # Samuli Seppänen <samuli@openvpn.net>
+#
 # Samuli Seppänen <samuli.seppanen@gmail.com>
 #
 # == License
 #
-# BSD-lisence
-# See file LICENSE for details
+# BSD-license. See file LICENSE for details.
 #
 define localuser::user
 (

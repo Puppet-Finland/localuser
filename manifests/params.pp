@@ -19,8 +19,7 @@ class localuser::params {
             $defaultshell = '/bin/csh'
         }
         default: {
-            $sudogroup = 'sudo'
-            $defaultshell = '/bin/bash'
+            fail("Unsupported OS: ${::osfamily}")
         }
     }
 }

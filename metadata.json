@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "author": "Puppet-Finland team",
   "license": "BSD license",
-  "summary": "Setup local users and SSH keys"
+  "summary": "Setup local users and SSH keys",
   "source": "https://github.com/Puppet-Finland/localuser.git",
   "project_page": "https://github.com/Puppet-Finland/localuser",
   "dependencies": [

@@ -8,18 +8,9 @@ class localuser::params {
     include ::os::params
 
     case $::osfamily {
-        'RedHat': {
-            $sudogroup = 'wheel'
-            $defaultshell = '/bin/bash'
-        }
-        'Debian': {
-            $sudogroup = 'sudo'
-            $defaultshell = '/bin/bash'
-        }
-        'FreeBSD': {
-            $sudogroup = 'wheel'
-            $defaultshell = '/bin/csh'
-        }
+        'RedHat': { }
+        'Debian': { }
+        'FreeBSD': { }
         default: {
             fail("Unsupported OS: ${::osfamily}")
         }

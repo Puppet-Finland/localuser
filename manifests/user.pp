@@ -24,7 +24,7 @@
 #   Valid values are true and false (default).
 # [*shell*]
 #   The default shell for the user. Defaults to 
-#   ${::localuser::params::defaultshell}.
+#   $::os::params::interactive_shell.
 # [*ssh_key*]
 #   User's public SSH key for $HOME/.ssh/authorized_keys. If left undefined, no 
 #   SSH key will be installed.
@@ -79,12 +79,12 @@ define localuser::user
     if $shell {
         $myshell = $shell
     } else {
-        $myshell = $::localuser::params::defaultshell
+        $myshell = $::os::params::interactive_shell
     }
 
     # Add the user to the admin group, if requested
     if $admin {
-        $all_groups = concat($groups,[$::localuser::params::sudogroup])
+        $all_groups = concat($groups,[$::os::params::sudogroup])
     } else {
         $all_groups = $groups
     }

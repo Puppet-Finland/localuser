@@ -6,6 +6,9 @@
 #
 # == Parameters
 #
+# [*manage*]
+#   Whether to manage local users with Puppet. Valid values are 'yes' (default) 
+#   and 'no'.
 # [*users*]
 #   A hash containing localuser::user defined resources. Take a look at
 #   the localuser::user define to see which parameters are available.
@@ -22,13 +25,13 @@
 #
 class localuser
 (
+    $manage = 'yes',
     $users = {}
 
 ) inherits localuser::params
 {
 
-# Rationale for this is explained in init.pp of the sshd module
-if hiera('manage_localuser', 'true') != 'false' {
+if $manage == 'yes' {
     create_resources('localuser::user', $users)
 }
 }

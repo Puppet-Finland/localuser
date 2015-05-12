@@ -5,6 +5,8 @@
 #
 class localuser::params {
 
+    include ::os::params
+
     case $::osfamily {
         'RedHat': {
             $sudogroup = 'wheel'

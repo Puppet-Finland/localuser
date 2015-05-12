@@ -10,7 +10,7 @@
 #
 # [*username*]
 #   Username for the user, for example 'joe'.
-# [*status*]
+# [*ensure*]
 #   User status, either 'present' or 'absent'. Defaults to 'present'. Affects 
 #   both the user entry and the associated SSH key.
 # [*password_hash*]
@@ -20,9 +20,8 @@
 # [*groups*]
 #   List of groups the user needs to be the member of.
 # [*admin*]
-#   Determine whether the user is an admin. Valid values 'yes' and 'no', 
-#   defaults to 'no'. In practice, adds the user to the OS-specific admin group 
-#   defined in localuser::params.
+#   Determine whether the user should joined to the (OS-specific) admin group. 
+#   Valid values are true and false (default).
 # [*shell*]
 #   The default shell for the user. Defaults to 
 #   ${::localuser::params::defaultshell}.
@@ -38,7 +37,7 @@
 #       username => 'john',
 #       comment => 'admin user with a SSH key',
 #       password_hash => 'users_password_hash',
-#       admin => 'yes',
+#       admin => true,
 #       key_type => 'ssh-dss',
 #       ssh_key => 'users_public_ssh_key'
 #   }
@@ -47,7 +46,7 @@
 #       username => 'jane',
 #       comment => 'normal user without a SSH key',
 #       password_hash => 'users_password_hash',
-#       admin => 'no',
+#       admin => false,
 #   }
 #
 # == Authors
@@ -63,57 +62,60 @@
 define localuser::user
 (
     $username,
-    $status='present',
-    $password_hash = '',
-    $comment="$username",
+    $ensure='present',
+    $password_hash = undef,
+    $comment=$username,
     $groups=[],
-    $admin='no',
-    $shell='',
-    $ssh_key='',
+    $admin=false,
+    $shell=undef,
+    $ssh_key=undef,
     $key_type='ssh-dss',
 )
 {
 
-    include localuser::params
+    include ::localuser::params
 
     # If $shell is not defined, use the OS default
-    if $shell == '' {
-        $myshell = "${::localuser::params::defaultshell}"
-    } else {
+    if $shell {
         $myshell = $shell
+    } else {
+        $myshell = $::localuser::params::defaultshell
     }
 
     # Add the user to the admin group, if requested
-    if $admin == 'yes' {
-        $all_groups = concat($groups,["$::localuser::params::sudogroup"])
+    if $admin {
+        $all_groups = concat($groups,[$::localuser::params::sudogroup])
     } else {
         $all_groups = $groups
     }
 
     # Create the local user
-    user { "$username":
-        password => $password_hash ? {
-            ''      => undef,
-            default => "${password_hash}",
-        },
-        shell => $myshell,
-        comment => "$username",
-        home => "/home/$username",
+    user { $username:
+        ensure     => $ensure,
+        password   => $password_hash,
+        shell      => $myshell,
+        comment    => $username,
+        home       => "${::os::params::home}/${username}",
         managehome => true,
-        groups => $all_groups,
-        ensure => $status,
+        groups     => $all_groups,
+    }
+
+    # This trick is required to prevent the user's home directory getting 
+    # removed before the SSH key is removed.
+    $before = $ensure ? {
+        'absent' => User[$username],
+        default  => undef,
     }
 
     # Add user's SSH key to $HOME/.ssh/authorized_keys, if one is given
-    if $ssh_key == '' {
-        # It seems "if not" and "if !" do not work, so this stub is needed.
-    } else {
-        ssh_authorized_key { "$username":
-            ensure => $status,
-            key => $ssh_key,
-            type => $key_type,
-            name => $username,
-            user => $username
+    if $ssh_key {
+        ssh_authorized_key { $username:
+            ensure => $ensure,
+            key    => $ssh_key,
+            type   => $key_type,
+            name   => $username,
+            user   => $username,
+            before => $before,
         }
     }
 }

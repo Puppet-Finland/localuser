@@ -13,8 +13,17 @@
 # [*ensure*]
 #   User status, either 'present' or 'absent'. Defaults to 'present'. Affects 
 #   both the user entry and the associated SSH key.
+# [*password*]
+#   The password (not a hash) to use. The hash will be auto-generated and passed 
+#   on to the user resource. This parameter is overridden by the $password_hash 
+#   parameter if it is defined.
+# [*salt*]
+#   A (random) string to pass to the the password hashing function. Only 
+#   required if $password parameter is defined.
 # [*password_hash*]
-#   The password hash to use. On Linux, this can be obtained from /etc/shadow.
+#   The password hash to use. On Linux, this can be obtained from /etc/shadow. 
+#   Note that one of $password_hash or $password has to be defined or this 
+#   resource will fail to apply.
 # [*comment*]
 #   Comment to add to the user. Defaults to value of $username.
 # [*groups*]
@@ -36,7 +45,7 @@
 #   localuser::user { 'john':
 #       username => 'john',
 #       comment => 'admin user with a SSH key',
-#       password_hash => 'users_password_hash',
+#       password => 'verysecret',
 #       admin => true,
 #       key_type => 'ssh-dss',
 #       ssh_key => 'users_public_ssh_key'
@@ -63,6 +72,8 @@ define localuser::user
 (
     $username,
     $ensure='present',
+    $password = undef,
+    $salt = undef,
     $password_hash = undef,
     $comment=$username,
     $groups=[],
@@ -89,13 +100,32 @@ define localuser::user
         $all_groups = $groups
     }
 
+    # Check if a password hash has been given as a parameter. If not, hash the 
+    # given plain-text password with the salt. If neither one is given then bail 
+    # out. Note that the salt is not generated on the fly in a function because 
+    # that would trigger regeneration of the password hash on every run, even if 
+    # the password itself would always remain the same.
+    if $password_hash {
+        $hash = $password_hash
+    } elsif ( $password and $salt ) {
+        $hash = pw_hash($password, 'SHA-512', $salt)
+    } else {
+        fail("ERROR: you need to define either \$password_hash or \$password _and_ \$salt parameters!")
+    }
+
+    # Determine the correct home directory
+    $homedir = $username ? {
+        'root'  => $::os::params::root_home,
+        default => "${::os::params::home}/${username}",
+    }
+
     # Create the local user
     user { $username:
         ensure     => $ensure,
-        password   => $password_hash,
+        password   => $hash,
         shell      => $myshell,
         comment    => $username,
-        home       => "${::os::params::home}/${username}",
+        home       => $homedir,
         managehome => true,
         groups     => $all_groups,
     }

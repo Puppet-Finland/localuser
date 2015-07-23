@@ -101,16 +101,17 @@ define localuser::user
     }
 
     # Check if a password hash has been given as a parameter. If not, hash the 
-    # given plain-text password with the salt. If neither one is given then bail 
-    # out. Note that the salt is not generated on the fly in a function because 
-    # that would trigger regeneration of the password hash on every run, even if 
-    # the password itself would always remain the same.
+    # given plain-text password with the salt. Note that the salt is not 
+    # generated on the fly in a function because that would trigger regeneration 
+    # of the password hash on every run, even if the password itself would 
+    # always remain the same. If no password is given, then do not set password 
+    # for the user.
     if $password_hash {
         $hash = $password_hash
     } elsif ( $password and $salt ) {
         $hash = pw_hash($password, 'SHA-512', $salt)
     } else {
-        fail("ERROR: you need to define either \$password_hash or \$password _and_ \$salt parameters!")
+        $hash = undef
     }
 
     # Determine the correct home directory

@@ -36,7 +36,8 @@ class localuser
 {
 
 if $manage == 'yes' {
-    create_resources('localuser::user', $users)
-    create_resources('group', $groups)
+    $defaults = {ensure => present}
+    create_resources('group', $groups, $defaults)
+    create_resources('localuser::user', $users, $defaults)
 }
 }

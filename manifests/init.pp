@@ -30,12 +30,19 @@
 class localuser
 (
     $manage = 'yes',
-    $users = {},
-    $groups = {},
+
+# Automatic parameter hiera lookup is disabled, the same params are 
+# fetched below with hiera_hash (deep hash merge)
+#    $users = {},
+#    $groups = {},
+
 ) inherits localuser::params
 {
 
 if $manage == 'yes' {
+    $users = hiera_hash('localuser::users', {})
+    $groups = hiera_hash('localuser::groups', {})
+
     $defaults = {ensure => present}
     create_resources('group', $groups, $defaults)
     create_resources('localuser::user', $users, $defaults)

@@ -35,6 +35,7 @@ class localuser
 # fetched below with hiera_hash (deep hash merge)
 #    $users = {},
 #    $groups = {},
+#    $ssh_keys = {},
 
 ) inherits localuser::params
 {
@@ -42,9 +43,13 @@ class localuser
 if $manage == 'yes' {
     $users = hiera_hash('localuser::users', {})
     $groups = hiera_hash('localuser::groups', {})
+    $ssh_keys = hiera_hash('localuser::ssh_keys', {})
 
     $defaults = {ensure => present}
     create_resources('group', $groups, $defaults)
     create_resources('localuser::user', $users, $defaults)
+
+    $key_defaults = {'ensure' => 'present', 'type' => 'ssh-rsa'}
+    create_resources('ssh_authorized_key', $ssh_keys, $key_defaults)
 }
 }
